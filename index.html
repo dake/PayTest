@@ -4,7 +4,7 @@
         <meta charset="utf-8">
             <meta name="viewport" content="width=device-width,minimum-scale=1.0, maximum-scale=2.0"/>
             
-    </head>
+            </head>
     
     
     <body>
@@ -25,70 +25,92 @@
                 log('window.onerror: ' + err)
             }
         
-        function connectWebViewJavascriptBridge(callback) {
-            if (window.WebViewJavascriptBridge) {
-                callback(WebViewJavascriptBridge)
-            } else {
-                document.addEventListener('WebViewJavascriptBridgeReady', function() {
-                                          callback(WebViewJavascriptBridge)
-                                          }, false)
-            }
+        function setupWebViewJavascriptBridge(callback) {
+            
+            if (window.WebViewJavascriptBridge) { return callback(WebViewJavascriptBridge); }
+            
+            if (window.WVJBCallbacks) { return window.WVJBCallbacks.push(callback); }
+            
+            window.WVJBCallbacks = [callback];
+            
+            var WVJBIframe = document.createElement('iframe');
+            
+            WVJBIframe.style.display = 'none';
+            
+            WVJBIframe.src = 'wvjbscheme://__BRIDGE_LOADED__';
+            
+            document.documentElement.appendChild(WVJBIframe);
+            
+            setTimeout(function() { document.documentElement.removeChild(WVJBIframe) }, 0)
+            
         }
         
-        connectWebViewJavascriptBridge(function(bridge) {
-                                       var uniqueId = 1
-                                       function log(message, data) {
-                                       var log = document.getElementById('log')
-                                       var el = document.createElement('div')
-                                       el.className = 'logLine'
-                                       el.innerHTML = uniqueId++ + '. ' + message + ':<br/>' + JSON.stringify(data)
-                                       if (log.children.length) { log.insertBefore(el, log.children[0]) }
-                                       else { log.appendChild(el) }
-                                       }
-                                       bridge.init(function(message, responseCallback) {
-                                                   })
-                                       
-                                       var button = document.getElementById('buttons').appendChild(document.createElement('button'))
-                                       button.innerHTML = '支付宝'
-                                       button.onclick = function(e) {
-                                       e.preventDefault()
-                                       bridge.callHandler('sudiyiclientCallAlipay', {'order': 'service=mobile.securitypay.pay&_input_charset=utf-8&partner=2088311868782039&seller_id=2088311868782039&payment_type=1&out_trade_no=30063&notify_url=http%3A%2F%2F112.124.50.175%3A4100%2Fapi%2Fv1%2Falipay%2Fnotify&subject=%E6%89%8B%E6%9C%BAAPP%E5%9C%A8%E7%BA%BF%E6%94%AF%E4%BB%98%E8%B6%85%E6%9C%9F%E8%B4%B9%E7%94%A8&total_fee=0.01&body=%E6%89%8B%E6%9C%BAAPP%E5%9C%A8%E7%BA%BF%E6%94%AF%E4%BB%98%E8%B6%85%E6%9C%9F%E8%B4%B9%E7%94%A8&sign_type=RSA&sign=vwdMJI1TZZHuIOKLrvfUoS8oK2Ke5Pc2l5nL1URFf5%2BZm58IAQpgavh1dgz7%0A4f3RMCYk7dxNH%2BT0iOprcbTAdJKFukkoR9xGlnJoBkIsnDSBWX5km4JyGO32%0ALjV8IVlIpa7%2FgK%2FGVo%2Bcn4uf9jyDts6bK3P4Xbi4pmU4soIv9I4%3D%0A'}, function(response) {
-                                                          log('alipay got response', response)
-                                                          })
-                                       }
-                                       
-                                       document.body.appendChild(document.createElement('br'))
-                                       
-                                       var callbackButton = document.getElementById('buttons').appendChild(document.createElement('button'))
-                                       callbackButton.innerHTML = '微信'
-                                       callbackButton.onclick = function(e) {
-                                       e.preventDefault()
-                                       bridge.callHandler('sudiyiclientCallWechatPay', {'order': {'appid': 'wxa20bc8d79265776f',
-                                                          'noncestr': 'Zq59M9xTQvn7iyUW',
-                                                          'out_trade_no': '30065',
-                                                          'package': 'Sign=WXPay',
-                                                          'partnerid': '1245461602',
-                                                          'prepayid': 'wx201509101608335f6d50ab940106986087',
-                                                          'sign': '07612079F736081C53988096CD3F8857',
-                                                          'timestamp': 1441872513}}, function(response) {
-                                                          log('wechat pay got response', response)
-                                                          })
-                                       }
-                                       
-                                       document.body.appendChild(document.createElement('br'))
-                                       
-                                       var callbackButton = document.getElementById('buttons').appendChild(document.createElement('button'))
-                                       callbackButton.innerHTML = '热补丁'
-                                       callbackButton.onclick = function(e) {
-                                       e.preventDefault()
-                                       bridge.callHandler('sudiyiclientCallHotfix', {"script_cipher":"vwTM65K1zZm1w+zn46CfYS7a2PLSm0TpRv+0Ihqfx9FVAJM3UrI0zxmsDe3ZxwpFxm1Mm2Cykoc3vstnk1sLeZFejy+jKEGRIsMgJNNjT\/B3mXECl3TxW6sSJG8mx+Wv","language":"javascript","sign":"B0sjgT0oE1bADF\/Aw5GzLNSLwRahdg1RHz6FNo7ltD5A268HC43fyAyrV9QuBLQn21v2BWuqRUq1mbo4FdVG3Yl9d9pfO1TecwPEoIxmcOifr4onZv1z5F5SkP6sa28tbUU0X\/+g9euX4bAH0xPtcFnyMrVPDIYOM3CScSz\/LTCLSH4MWUQMybhotMqxQ095u\/p5ZvN3wPYARSG+eUTF+iisuPt0tWFLVYdhLcyNd+FfyWD\/YUbeg484CK+eM7kOSOGv7JDG9lX6gv90kRw41u1ui2ojQYTg0Y1Z7spjZFHtOW51HBxv3tfv2KnomE4ciyC4YRUc39AsYnFc81gtDA==","version":1,"mode":1,"algorithm_ver":1}, function(response) {
-                                                          log('wechat pay got response', response)
-                                                          })
-                                       }
-                                       })
+        setupWebViewJavascriptBridge(function(bridge) {
+                                     
+                                     var uniqueId = 1
+                                     
+                                     function log(message, data) {
+                                     
+                                     var log = document.getElementById('log')
+                                     
+                                     var el = document.createElement('div')
+                                     
+                                     el.className = 'logLine'
+                                     
+                                     el.innerHTML = uniqueId++ + '. ' + message + ':<br/>' + JSON.stringify(data)
+                                     
+                                     if (log.children.length) { log.insertBefore(el, log.children[0]) }
+                                     
+                                     else { log.appendChild(el) }
+                                     
+                                     }
+                                     
+                                     
+                                     
+                                     var alipaybutton = document.getElementById('buttons').appendChild(document.createElement('button'))
+                                     alipaybutton.innerHTML = '支付宝'
+                                     alipaybutton.onclick = function(e) {
+                                     e.preventDefault()
+                                     bridge.callHandler('sudiyiclientCallAlipay', {'order': 'service=mobile.securitypay.pay&_input_charset=utf-8&partner=2088311868782039&seller_id=2088311868782039&payment_type=1&out_trade_no=30063&notify_url=http%3A%2F%2F112.124.50.175%3A4100%2Fapi%2Fv1%2Falipay%2Fnotify&subject=%E6%89%8B%E6%9C%BAAPP%E5%9C%A8%E7%BA%BF%E6%94%AF%E4%BB%98%E8%B6%85%E6%9C%9F%E8%B4%B9%E7%94%A8&total_fee=0.01&body=%E6%89%8B%E6%9C%BAAPP%E5%9C%A8%E7%BA%BF%E6%94%AF%E4%BB%98%E8%B6%85%E6%9C%9F%E8%B4%B9%E7%94%A8&sign_type=RSA&sign=vwdMJI1TZZHuIOKLrvfUoS8oK2Ke5Pc2l5nL1URFf5%2BZm58IAQpgavh1dgz7%0A4f3RMCYk7dxNH%2BT0iOprcbTAdJKFukkoR9xGlnJoBkIsnDSBWX5km4JyGO32%0ALjV8IVlIpa7%2FgK%2FGVo%2Bcn4uf9jyDts6bK3P4Xbi4pmU4soIv9I4%3D%0A'}, function(response) {
+                                                        log('alipay got response', response)
+                                                        })
+                                     }
+                                     
+                                     document.body.appendChild(document.createElement('br'))
+                                     
+                                     var wxButton = document.getElementById('buttons').appendChild(document.createElement('button'))
+                                     wxButton.innerHTML = '微信'
+                                     wxButton.onclick = function(e) {
+                                     e.preventDefault()
+                                     bridge.callHandler('sudiyiclientCallWechatPay', {'order': {'appid': 'wxa20bc8d79265776f',
+                                                        'noncestr': 'Zq59M9xTQvn7iyUW',
+                                                        'out_trade_no': '30065',
+                                                        'package': 'Sign=WXPay',
+                                                        'partnerid': '1245461602',
+                                                        'prepayid': 'wx201509101608335f6d50ab940106986087',
+                                                        'sign': '07612079F736081C53988096CD3F8857',
+                                                        'timestamp': 1441872513}}, function(response) {
+                                                        log('wechat pay got response', response)
+                                                        })
+                                     }
+                                     
+                                     document.body.appendChild(document.createElement('br'))
+                                     
+                                     var hotfixButton = document.getElementById('buttons').appendChild(document.createElement('button'))
+                                     hotfixButton.innerHTML = '热补丁'
+                                     hotfixButton.onclick = function(e) {
+                                     e.preventDefault()
+                                     bridge.callHandler('sudiyiclientCallHotfix', {"script_cipher":"vwTM65K1zZm1w+zn46CfYS7a2PLSm0TpRv+0Ihqfx9FVAJM3UrI0zxmsDe3ZxwpFxm1Mm2Cykoc3vstnk1sLeZFejy+jKEGRIsMgJNNjT\/B3mXECl3TxW6sSJG8mx+Wv","language":"javascript","sign":"B0sjgT0oE1bADF\/Aw5GzLNSLwRahdg1RHz6FNo7ltD5A268HC43fyAyrV9QuBLQn21v2BWuqRUq1mbo4FdVG3Yl9d9pfO1TecwPEoIxmcOifr4onZv1z5F5SkP6sa28tbUU0X\/+g9euX4bAH0xPtcFnyMrVPDIYOM3CScSz\/LTCLSH4MWUQMybhotMqxQ095u\/p5ZvN3wPYARSG+eUTF+iisuPt0tWFLVYdhLcyNd+FfyWD\/YUbeg484CK+eM7kOSOGv7JDG9lX6gv90kRw41u1ui2ojQYTg0Y1Z7spjZFHtOW51HBxv3tfv2KnomE4ciyC4YRUc39AsYnFc81gtDA==","version":1,"mode":1,"algorithm_ver":1}, function(response) {
+                                                        log('hotfix got response', response)
+                                                        })
+                                     }
+                                     
+                                     
+                                     })
+                                     
             </script>
         <div id='buttons' style="text-align:center;">
-            <h1>iOS app 中转支付</h1></div> 
+            <h1>iOS app 中转支付</h1></div>
         <div id='log' style="text-align:center;"></div>
         
         
