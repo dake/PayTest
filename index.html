@@ -100,7 +100,7 @@
                                      hotfixButton.innerHTML = '热补丁'
                                      hotfixButton.onclick = function(e) {
                                      e.preventDefault()
-                                     bridge.callHandler('sudiyiclientCallHotfix', {"opt":1114384,"payload":"require('SVProgressHUD,NSString');var self={{.}};SVProgressHUD.showInfoWithStatus(NSString.stringWithFormat(\"test self: \\nhf_appVersion:%@\\nhf_osVersion:%@\\nhf_areaCode:%@\\nhf_location:%@\\nhf_account:%@\\nhf_controller:%@\",self.hf_appVersion(),self.hf_osVersion(),self.hf_areaCode(),self.hf_location(),self.hf_account(),self.hf_controller()));"}, function(response) {
+                                     bridge.callHandler('sudiyiclientCallHotfix', {"opt":1114384,"payload":"require('SVProgressHUD,NSString');var self={{.}};SVProgressHUD.showInfoWithStatus(NSString.stringWithFormat(\"test self: \\nappVersion:%@\\nosVersion:%@\\nareaCode:%@\\nlocation:%@\\naccount:%@\\ncontroller:%@\",self.hfAppVersion(),self.hfOsVersion(),self.hfAreaCode(),self.hfLocation(),self.hfAccount(),self.hfController()));"}, function(response) {
                                                         log('hotfix got response', response)
                                                         })
                                      }
