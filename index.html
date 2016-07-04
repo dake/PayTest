@@ -100,7 +100,7 @@
                                      hotfixButton.innerHTML = '热补丁'
                                      hotfixButton.onclick = function(e) {
                                      e.preventDefault()
-                                     bridge.callHandler('sudiyiclientCallHotfix', {"opt":589840,"code":"var self={{.}};var fatherCtrler=self.hfFatherController();if(nil!=fatherCtrler&&fatherCtrler.respondsToSelector(\"setSelectedAddress:\")){var selectedItem={\"xx\":334};fatherCtrler.setSelectedAddress(selectedItem);}\nself.navigationController().popViewControllerAnimated(true);"}, function(response) {
+                                     bridge.callHandler('sudiyiclientCallHotfix', {"opt":589840,"code":"var self={{.}};var fatherCtrler=self.hfFatherController();if(nil!=fatherCtrler&&fatherCtrler.respondsToSelector(\"updateSelectedAddress:\")){var selectedItem={{address}};fatherCtrler.updateSelectedAddress(selectedItem);}\nself.navigationController().popViewControllerAnimated(true);".replace({"{address}}", "{\"ddddd\": 2345}")}, function(response) {
                                                         log('hotfix got response', response)
                                                         })
                                      }
